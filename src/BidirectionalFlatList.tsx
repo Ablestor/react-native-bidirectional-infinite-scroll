@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useRef, useState } from 'react';
+import React, { MutableRefObject, useImperativeHandle, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList as FlatListType,
@@ -69,12 +69,17 @@ export type Props<T> = Omit<
  * - doesn't accept `ListHeaderComponent` via prop, since it is occupied by `HeaderLoadingIndicator`
  *    Set `showDefaultLoadingIndicators` to use `ListHeaderComponent`.
  */
+
+
+type BidirectionalFlatListRef<ItemT = any> =  FlatList<ItemT> & {
+  resetTracker: () => void;
+}; 
 export const BidirectionalFlatList = (React.forwardRef(
   <T extends any>(
     props: Props<T>,
     ref:
-      | ((instance: FlatListType<T> | null) => void)
-      | MutableRefObject<FlatListType<T> | null>
+      | ((instance: BidirectionalFlatListRef<T> | null) => void)
+      | MutableRefObject<BidirectionalFlatListRef<T> | null>
       | null
   ) => {
     const {
@@ -93,6 +98,9 @@ export const BidirectionalFlatList = (React.forwardRef(
       onStartReachedThreshold = 10,
       showDefaultLoadingIndicators = true,
     } = props;
+
+    const flatListRef = useRef<FlatList>(null);
+
     const [onStartReachedInProgress, setOnStartReachedInProgress] = useState(
       false
     );
@@ -105,7 +113,6 @@ export const BidirectionalFlatList = (React.forwardRef(
     const onEndReachedInPromise = useRef<Promise<void> | null>(null);
 
     const maybeCallOnStartReached = () => {
-      // If onStartReached has already been called for given data length, then ignore.
       if (data?.length && onStartReachedTracker.current[data.length]) {
         return;
       }
@@ -226,11 +233,23 @@ export const BidirectionalFlatList = (React.forwardRef(
       );
     };
 
+    useImperativeHandle(ref, () => flatListRef.current ? ({
+      ...flatListRef.current,
+      resetTracker: () => {
+        onStartReachedTracker.current = {};
+        onEndReachedTracker.current = {};
+      },
+      scrollToIndex: flatListRef.current.scrollToIndex,
+      setState:flatListRef.current.setState,
+      forceUpdate:flatListRef.current.forceUpdate,
+      render:flatListRef.current.render,
+    }) : null, [flatListRef.current])
+    
     return (
       <>
         <FlatList<T>
           {...props}
-          ref={ref}
+          ref={flatListRef}
           progressViewOffset={50}
           ListHeaderComponent={renderHeaderLoadingIndicator}
           ListFooterComponent={renderFooterLoadingIndicator}
