@@ -1,7 +1,11 @@
-import React, { MutableRefObject, useImperativeHandle, useRef, useState } from 'react';
+import React, {
+  MutableRefObject,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
-  FlatList as FlatListType,
   FlatListProps,
   ScrollViewProps,
   StyleSheet,
@@ -70,10 +74,9 @@ export type Props<T> = Omit<
  *    Set `showDefaultLoadingIndicators` to use `ListHeaderComponent`.
  */
 
-
-type BidirectionalFlatListRef<ItemT = any> =  FlatList<ItemT> & {
+type BidirectionalFlatListRef<ItemT = any> = FlatList<ItemT> & {
   resetTracker: () => void;
-}; 
+};
 export const BidirectionalFlatList = (React.forwardRef(
   <T extends any>(
     props: Props<T>,
@@ -233,18 +236,22 @@ export const BidirectionalFlatList = (React.forwardRef(
       );
     };
 
-    useImperativeHandle(ref, () => flatListRef.current ? ({
-      ...flatListRef.current,
-      resetTracker: () => {
-        onStartReachedTracker.current = {};
-        onEndReachedTracker.current = {};
-      },
-      scrollToIndex: flatListRef.current.scrollToIndex,
-      setState:flatListRef.current.setState,
-      forceUpdate:flatListRef.current.forceUpdate,
-      render:flatListRef.current.render,
-    }) : null, [flatListRef.current])
-    
+    useImperativeHandle(ref, () =>
+      flatListRef.current
+        ? {
+            ...flatListRef.current,
+            resetTracker: () => {
+              onStartReachedTracker.current = {};
+              onEndReachedTracker.current = {};
+            },
+            scrollToIndex: flatListRef.current.scrollToIndex,
+            setState: flatListRef.current.setState,
+            forceUpdate: flatListRef.current.forceUpdate,
+            render: flatListRef.current.render,
+          }
+        : (null as any)
+    );
+
     return (
       <>
         <FlatList<T>
