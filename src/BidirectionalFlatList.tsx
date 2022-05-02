@@ -20,10 +20,16 @@ const styles = StyleSheet.create({
   },
 });
 
+type BidirectionalFlatListRef<ItemT = any> = FlatList<ItemT> & {
+  resetTracker: () => void;
+};
+
 export type Props<T> = Omit<
   FlatListProps<T>,
   'maintainVisibleContentPosition'
 > & {
+  ref?: React.Ref<BidirectionalFlatListRef<T>>;
+
   /**
    * Called once when the scroll position gets close to end of list. This must return a promise.
    * You can `onEndReachedThreshold` as distance from end of list, when this function should be called.
@@ -74,9 +80,6 @@ export type Props<T> = Omit<
  *    Set `showDefaultLoadingIndicators` to use `ListHeaderComponent`.
  */
 
-type BidirectionalFlatListRef<ItemT = any> = FlatList<ItemT> & {
-  resetTracker: () => void;
-};
 export const BidirectionalFlatList = (React.forwardRef(
   <T extends any>(
     props: Props<T>,
