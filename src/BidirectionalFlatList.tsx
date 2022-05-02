@@ -247,6 +247,7 @@ export const BidirectionalFlatList = (React.forwardRef(
               onStartReachedTracker.current = {};
               onEndReachedTracker.current = {};
             },
+            scrollToEnd: flatListRef.current.scrollToEnd,
             scrollToIndex: flatListRef.current.scrollToIndex,
             setState: flatListRef.current.setState,
             forceUpdate: flatListRef.current.forceUpdate,
